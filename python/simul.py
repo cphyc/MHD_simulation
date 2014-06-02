@@ -107,7 +107,7 @@ class Simulation(object):
     param_list = {'Re': 1, 'Pr': 1, 'Ra': 1, 'a' : 1, 'Nz': 100,
                   'NFourier': 50, 'dt_security': 0.9,
                   'maxiter': 100, 'freq_output': 10,
-                  'output_file': "dump.log"}
+                  'freq_critical_Ra':50}
 
     def __init__(self, *args, **kargs):
         # save the default parameters
@@ -135,10 +135,32 @@ class Simulation(object):
         self.omega = Vort(self)
         self.psi = Stream(self)
 
-        # T previous for critical Ra number
+        # previous fields for critical Ra number
+        self.T_old = np.zeros((self.NFourier,))
+        self.omega_old = np.zeros((self.NFourier,))
+        self.psi_old = np.zeros((self.NFourier,))
 
     def __del__(self):
         pass
+
+    def growth(self):
+        ''' Calculate the log-growth rate and return a string containing
+        all the growth rate'''
+        
+        amp = lambda v: np.log(abs(v)) if v != 0 else 0
+        gr = lambda new,old,n: str(amp(new.field[self.Nz//3,n])
+                                   - amp(abs(old[n])))
+        out = "".join([ gr(self.T, self.T_old,n) + "\t" +
+                        gr(self.omega, self.omega_old,n) + "\t" +
+                        gr(self.psi, self.psi_old,n) + "\t"
+                        for n in range(self.NFourier) ])
+
+        # save the arrays for next output
+        self.T_old = self.T.field[self.Nz//3,:]
+        self.omega_old = self.omega.field[self.Nz//3,:]
+        self.psi_old = self.psi.field[self.Nz//3,:]
+
+        return out+"\n"
 
     def step(self):
         # eventually output
@@ -146,11 +168,19 @@ class Simulation(object):
             self.dump()
 
         # eventually calculate the d-ln term for the critical Ra
-        if self.niter % self.freq_cirtical_Ra == 0:
-            self.T_old = self.T.field[self.Nz//3,n]
-            output = "# T growth : \t"
-            for n in range(self.NFourier):
-                output += ""
+        if self.niter % self.freq_critical_Ra == 0 :
+            output = "# growth : \t"
+            output+= "".join([
+                "{T.name}_{n}\t{w.name}_{n}\t{psi.name}_{n}".format(T=self.T,
+                                                                    w=self.omega,
+                                                                    psi=self.psi,
+                                                                    n=n)
+                for n in range(self.NFourier)])
+            output+= "\n"
+            output+= "# growth : \t"
+            output+= self.growth()
+            print(output)
+
         # get the max timestep
         self.CFL()
 
