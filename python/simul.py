@@ -7,7 +7,7 @@ try:
     import cPickle as pickle
 except ImportError:
     import pickle
-import ipdb
+#import ipdb
 
 ## Tri Diagonal Matrix Algorithm(a.k.a Thomas algorithm) solver
 def TDMAsolver(a, b, c, d):
@@ -42,7 +42,7 @@ class Vector(object):
 
     def step(self):
         # save the old G
-        self.G_old = self.G
+        self.G_old = self.G.copy()
 
         # compute the new one 
         self.compute_G()
@@ -50,7 +50,7 @@ class Vector(object):
         # new += dt/2*(3G-G_old)
         self.field[1:-1] = (self.field[1:-1] 
                             + self.p.dt/2*(3*self.G[1:-1] - self.G_old[1:-1])
-                        ) 
+                        )
 
         # conditions at top and bottom : null
         self.field[0 ,:] = 0
@@ -108,7 +108,7 @@ class Vort(Vector):
             self.sub[:,n] = [sub_f(k) for k in range(self.p.Nz)]
 
     def step(self):
-        rhs = self.p.psi.field
+        rhs = self.p.psi.field.copy()
         # boundary conditions k=0, Nz-1 : psi = 0
         rhs[0, :] = 0
         rhs[-1,:] = 0
@@ -129,9 +129,10 @@ class Stream(Vector):
     def compute_G(self):
         # compute G except for k=0, Nz-1 and n=0
         for n in range(1, self.p.NFourier):
-            self.G[1:-1,n] = self.p.Pr*( self.p.Ra*n*self.p.pi/self.p.a*self.p.T.field[1:-1,n]
-                                         + (self.field[:-2,n] - 2*self.field[1:-1,n] + self.field[2:,n])*self.p.oodz2
-                                         - (n*self.p.pi/self.p.a)**2*self.field[1:-1,n] )
+            a = self.p.Ra*n*self.p.pi/self.p.a*self.p.T.field[1:-1,n]
+            b = (self.field[:-2,n] - 2*self.field[1:-1,n] + self.field[2:,n])*self.p.oodz2
+            c = (n*self.p.pi/self.p.a)**2*self.field[1:-1,n]
+            self.G[1:-1,n] = self.p.Pr*( a + b - c)
 
 class Simulation(object):
     param_list = {'Re': 1, 'Pr': 1, 'Ra': 1, 'a' : 1, 'Nz': 100,
@@ -186,7 +187,6 @@ class Simulation(object):
                         for n in range(self.NFourier) ])
 
         # save the arrays for next output
-        ipdb.set_trace()
         self.T_old = self.T.field[self.Nz//3,:].copy()
         self.omega_old = self.omega.field[self.Nz//3,:].copy()
         self.psi_old = self.psi.field[self.Nz//3,:].copy()
