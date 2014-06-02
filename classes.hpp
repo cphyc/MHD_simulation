@@ -3,15 +3,14 @@
 // Describes the nth component of the x-FFT of a 2-D field
 class Vector{
 protected:
-  field val;
   double top_boundary, bot_boundary;
   
 public:
+  field val;
   field G, G_old;
   int n;
 
   Vector(double (*f)(int, int), double top = 0, double bot = 0);
-  vector mode(int n) {return val[n];};
   void boundaries(double (*val)(int));
 };
 
@@ -22,6 +21,7 @@ private:
   void compute_G(int);
 public:
   void step();
+
 };
 
 // Describes a vorticity field
