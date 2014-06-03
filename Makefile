@@ -1,5 +1,5 @@
 CC=g++ -std=c++11 -g
-CFLAGS=-c -Wall
+CFLAGS=-c -Wall -ffast-math -fomit-frame-pointer
 LFLAGS=
 SOURCES=misc.cpp constant.cpp classes.cpp solve.cpp
 OBJECTS=$(SOURCES:.cpp=.o) 
