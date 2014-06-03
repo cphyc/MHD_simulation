@@ -18,8 +18,6 @@ extern double dt;
 const double MAX_TIME =        1000; // Max time
 extern int   MAX_NITER;
 const double PI       = 4.0*atan(1);
-const int FREQ_GROWTH =         500;
 const double c        =        PI/a;
-
 const double DT       =         1.0;
 #endif

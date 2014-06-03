@@ -5,7 +5,6 @@
 #include <string>
 #include "classes.hpp"
 #include "misc.hpp"
-#include "kissFFT/kiss_fft.h"
  
 using namespace std;
 
@@ -22,7 +21,12 @@ int main(){
   dt = 0.50*pow(dz,2)/(4*max(1,Pr));
 
   // Create a new simulation
-  Simulation s (20,0,0);
+  // arguments are : save_freq, save_freq_growth, 
+  //		     max_niter, max_time,
+  //		     init_time, init_niter
+  // all optionnals
+
+  Simulation s (20, 0, 100000);
 
   // Init T with Tbound_top = 0, Tbount_bot = DT
   Temp T (T_init, 0, 0);

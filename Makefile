@@ -1,7 +1,7 @@
 CC=g++ -std=c++11 -g
-CFLAGS=-c -Wall -ffast-math -fomit-frame-pointer
-LFLAGS=
-SOURCES=misc.cpp constant.cpp classes.cpp solve.cpp
+CFLAGS=-c -Wall -ffast-math -fomit-frame-pointer -O2 -g
+LFLAGS=-O2 -g
+SOURCES=misc.cpp constant.cpp vector.cpp simulation.cpp solve.cpp 
 OBJECTS=$(SOURCES:.cpp=.o) 
 EXECUTABLE=simul
 
@@ -14,6 +14,6 @@ $(EXECUTABLE): $(OBJECTS)
 	$(CC) $(CFLAGS) $< -o $@
 
 clean:
-	rm $(EXECUTABLE) $(OBJECTS)
+	rm $(EXECUTABLE) $(OBJECTS) *.o
 
 rebuild: clean all
