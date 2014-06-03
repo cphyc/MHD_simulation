@@ -5,7 +5,8 @@
 #include <string>
 #include "classes.hpp"
 #include "misc.hpp"
-
+#include "kissFFT/kiss_fft.h"
+ 
 using namespace std;
 
 // Initialize Ra and Pr
@@ -28,16 +29,16 @@ int main(){
 
   // Init with null boundary conditions
   Vort w (null_init, 0, 0);
-  Stream phi (null_init, 0, 0);
+  Stream psi (null_init, 0, 0);
 
   // Iterate at least once over time
   do {    
-    // Other way : calculate first phi, then w, then T
-    phi.step(w);
-    w.step(T);
-    T.step();
+    // Other way : calculate linear first psi, then w, then T
+    psi.linear_step(w);
+    w.linear_step(T, psi);
+    T.linear_step(psi);
 
-  } while (s.iter(T, w, phi)); 
+  } while (s.iter(T, w, psi)); 
 
   return 0;
 }

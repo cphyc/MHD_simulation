@@ -4,7 +4,7 @@
 class Vector{
 protected:
   double top_boundary, bot_boundary;
-  
+  field nonlinear_contribution();  
 public:
   field val;
   field G, G_old;
@@ -18,9 +18,10 @@ public:
 class Temp : public Vector{
   using Vector::Vector;
 private:
-  void compute_G(int);
+  double non_linear_term(Vector, int, int);
+  void compute_G(int, int);
 public:
-  void step();
+  void linear_step(Vector);
 
 };
 
@@ -28,9 +29,10 @@ public:
 class Vort : public Vector{
   using Vector::Vector;
 private:
-  void compute_G(int,Temp);
+  double non_linear_term(Vector, int, int);
+  void compute_G(Vector, int, int);
 public:
-  void step(Temp);
+  void linear_step(Vector, Vector);
 };
 
 // Describes a stream field
@@ -39,14 +41,14 @@ class Stream : public Vector{
 public:
   field sub, sup, dia;
 
-  void step(Vort);
+  void linear_step(Vector);
   Stream(double (*init)(int, int));
 };
 
     
 class Simulation{
 private:
-  std::array<double,NMAX> old_T, old_w, old_phi;
+  std::array<double,NMAX> old_T, old_w, old_psi;
   void dump(Temp, Vort, Stream );
 public:
   double time = 0;
