@@ -63,7 +63,7 @@ void Temp::compute(){
       nlt = non_linear_term(n, k);
 
       // New value
-      this->dval[n][k] += nlt + p->dt/2 * (3*G[n][k] - G_old[n][k]);
+      this->dval[n][k] = nlt + p->dt/2 * (3*G[n][k] - G_old[n][k]);
     }
   }
   // set the boundary conditions and apply T_0 for 0th mode
