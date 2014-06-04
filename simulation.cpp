@@ -27,17 +27,17 @@ Simulation::Simulation (int save_freq, int save_freq_growth,
 // T0 w0 psi0 T1 w1 psi1 ... Tn wn psin
 void Simulation::dump(){
   // write the header
-  std::cout << "\n\n#Header t:\t" << t << "\t" << dt_security*pow(DZ,2)/(4*max(1,Pr));
+  std::cout << "\n#Infos t:\t" << t << "\tk:\t" << niter << std::endl;
 
   // count the columns
-  std::cout << std::endl << "#";
-  for (int n = 1; n < NMAX; n++)
-    std::cout << n << "\t";
+  std::cout <<  "#Cols ";
+  for (int nc = 1; nc < (NMAX-1)*4+1; nc++)
+    std::cout << nc << "\t";
   std::cout << std::endl;
 
   // print the title
-  std::cout << "k" ;
-  for (int n = 1; n < NMAX; n++)
+  std::cout << "#Header k" ;
+  for (int n = 0; n < NMAX; n++)
     std::cout << "\tT_" << n << "\tw_" << n << "\tpsi_" << n ;
   
   // get back to the next line

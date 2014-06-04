@@ -12,12 +12,13 @@ protected:
   double top_boundary, bot_boundary;
   field nonlinear_contribution();
 public:
-  field val;
+  field val, dval;
   field G, G_old;
   int n;
   
-  void step();
-  void boundaries(double (*val)(int));
+  void compute();
+  void add();
+  void boundaries();
 
   Vector(double (*f)(int, int), double top, double bot,
 	 Simulation* dady);
@@ -30,8 +31,7 @@ private:
   double non_linear_term(int, int);
   void compute_G(int, int);
 public:
-  void step();
-
+  void compute();
 };
 
 // Describes a vorticity field
@@ -41,7 +41,7 @@ private:
   double non_linear_term(int, int);
   void compute_G(int, int);
 public:
-  void step();
+  void compute();
 };
 
 // Describes a stream field
@@ -50,7 +50,7 @@ class Stream : public Vector{
 private:
   field sub, sup, dia;
 public:
-  void step();
+  void compute();
 
   Stream(double (*init)(int, int), double, double, Simulation*);
 };

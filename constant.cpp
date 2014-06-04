@@ -5,9 +5,9 @@
 
 inline double max(double a, double b){ if (a > b) return a; else return b;}
 
-const int   NZ        =         100; // Z dimension
+const int   NZ        =          30; // Z dimension
 const int   a         =           1;
-const int   NMAX      =          50; // Resolution for FFT
+const int   NMAX      =          5; // Resolution for FFT
 const double DT       =           1; // DTemperature
 
 const double DZ       =  1.0/(NZ-1); // Vertical step

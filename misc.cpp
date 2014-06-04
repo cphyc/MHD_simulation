@@ -1,9 +1,11 @@
 #include <cmath>
+#include <iostream>
 #include "misc.hpp"
 
 /* Solve a matrix equation of the form :
    M*A = B with M tridiagonal and M,B known */
-void triDiSolve(vector rhs, vector &sol, vector sub, vector dia, vector sup){
+void triDiSolve(vector &rhs, vector &sol, vector &sub,
+		vector &dia, vector &sup){
   vector wk1, wk2;
 
   wk1[0] = 1.0/dia[0];
@@ -49,3 +51,4 @@ double abs(double x) {
   else return -x;
 }
 
+void pp(double val) { std::cout << val << "\t"; }

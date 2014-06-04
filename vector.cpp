@@ -21,16 +21,25 @@ Vector::Vector(double (*init)(int, int), double top, double bot, Simulation* dad
 }
 
 // set boundary conditions at k = NZ-1 and k = 0
-void Vector::boundaries(double (*val)(int)){
+void Vector::boundaries(){
   // set boundaries
   for (int n = 1; n < NMAX; n++){
     this->val[n][NZ-1] = top_boundary;
     this->val[n][0   ] = bot_boundary;
   }
 
-  // set mode 0
-  for (int k = 0; k < NZ ; k ++)
-    this->val[0][k] = val(k);
+  // // set mode 0
+  // for (int k = 0; k < NZ ; k ++)
+  //   this->val[0][k] = val(k);
+}
+
+// Add the newly computed "dval" to our field"val"
+void Vector::add() {
+  for (int n=0; n < NMAX; n++) {
+    for (int k=0; k < NZ; k++) {
+      val[n][k] += dval[n][k];
+    }
+  }
 }
 
  
@@ -43,7 +52,7 @@ void Temp::compute_G(int n, int k){
 }
 
 // Iterates over all modes and compute the new step
-void Temp::step(){
+void Temp::compute(){
   double nlt;
   for (int n = 0; n < NMAX; n++) {
     for (int k = 1; k < NZ-1; k++){
@@ -54,11 +63,10 @@ void Temp::step(){
       nlt = non_linear_term(n, k);
 
       // New value
-      this->val[n][k] += nlt + p->dt/2 * (3*G[n][k] - G_old[n][k]);
+      this->dval[n][k] += nlt + p->dt/2 * (3*G[n][k] - G_old[n][k]);
     }
   }
   // set the boundary conditions and apply T_0 for 0th mode
-  boundaries(T_0);
 }
 
 double Temp::non_linear_term(int n, int k){
@@ -101,16 +109,15 @@ double Temp::non_linear_term(int n, int k){
 }
 
 void Vort::compute_G(int n, int k){
-
-  G_old[n] = G[n];
+  G_old[n][k] = G[n][k];
   G[n][k] = p->Ra*p->Pr*(n * c) * this->p->T->val[n][k] 
     + p->Pr*((this->val[n][k+1] - 2*this->val[n][k]+this->val[n][k-1]) * OODZ_2
 	  - pow(n * c, 2) * this->val[n][k]);
 }
 
   
-void Vort::step(){
-  double nlt;
+void Vort::compute(){
+  double nlt  = 0;
   for (int n = 0; n < NMAX; n++) {
     for (int k = 1; k < NZ-1; k++){
       // compute G
@@ -120,11 +127,9 @@ void Vort::step(){
       nlt = non_linear_term(n, k);
 
       // New value
-      this->val[n][k] += nlt + p->dt/2 * (3*G[n][k] - G_old[n][k]);
+      this->dval[n][k] = nlt + p->dt/2 * (3*G[n][k] - G_old[n][k]);
     }
   }
-  // set the boundary conditions and apply 0 for 0th mode
-  boundaries(null_0);
 }
 
 double Vort::non_linear_term(int n, int k){
@@ -138,19 +143,19 @@ double Vort::non_linear_term(int n, int k){
     // nl term from other T
     for (int n2 = 1; n2 < NMAX; n2++) {
       n3 = n - n2;
-      if (n3 > 0) {
-	nlt += - c/2 * (-n2*(this->val[n3][k+1] - this->val[n3][k-1])/(2*DZ) * w->val[n2][k]
-			     +n3*this->val[n3][k] * (w->val[n2][k+1] - w->val[n2][k-1])/(2*DZ));
+      if (n3 > 0 && n3 < NZ) {
+	nlt += - c/2 * (- n2*(this->val[n3][k+1] - this->val[n3][k-1])/(2*DZ) * w->val[n2][k]
+			+ n3*this->val[n3][k] * (w->val[n2][k+1] - w->val[n2][k-1])/(2*DZ));
       }
-      n3 = n2 -n;
-      if (n3 > 0) {
-	nlt += -c/2*(n2*(this->val[n3][k+1] - this->val[n3][k-1])/(2*DZ) * w->val[n2][k]
-			  +n3*this->val[n3][k] * (w->val[n2][k+1] - w->val[n2][k-1])/(2*DZ));
+      n3 = n2 - n;
+      if (n3 > 0 && n3 < NZ) {
+	nlt += - c/2 * (  n2*(this->val[n3][k+1] - this->val[n3][k-1])/(2*DZ) * w->val[n2][k]
+			+ n3*this->val[n3][k] * (w->val[n2][k+1] - w->val[n2][k-1])/(2*DZ));
       }
-      n3 = n+n2;
-      if (n3 > 0) {
-	nlt += c/2*(n2*(this->val[n3][k+1] - this->val[n3][k-1])/(2*DZ) * w->val[n2][k]
-			  +n3*this->val[n3][k] * (w->val[n2][k+1] - w->val[n2][k-1])/(2*DZ));
+      n3 = n + n2;
+      if (n3 > 0 && n3 < NZ) {
+	nlt += c/2 * (  n2*(this->val[n3][k+1] - this->val[n3][k-1])/(2*DZ) * w->val[n2][k]
+		      + n3*this->val[n3][k] * (w->val[n2][k+1] - w->val[n2][k-1])/(2*DZ));
       }
     }
     return nlt;
@@ -173,6 +178,8 @@ Stream::Stream (double (*init)(int, int), double top, double bot,
       sub[n][k] = -OODZ_2;
       sup[n][k] = -OODZ_2;
       dia[n][k] = dia_val;
+      // dval is 0 because a tridiagonal solver is used
+      dval[n][k] = 0;
     }
     dia[n][0   ] = 1;
     dia[n][NZ-1] = 1;
@@ -182,11 +189,10 @@ Stream::Stream (double (*init)(int, int), double top, double bot,
     
 }
 
-void Stream::step() {
+void Stream::compute() {
   // solve using the tridiagonal method for each mode
   for (int n = 1; n < NMAX; n++) {
-    triDiSolve(this->p->w->val[n], this->val[n], this->sub[n], this->dia[n], this->sup[n]);
+    triDiSolve(this->p->w->val[n], this->val[n],
+	       this->sub[n], this->dia[n], this->sup[n]);
   }
-  boundaries(null_0);
 }
-

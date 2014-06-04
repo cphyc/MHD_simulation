@@ -9,7 +9,8 @@ typedef std::array<double,NZ> vector;
 // Type of our fields (array of vectors)
 typedef std::array<vector,NMAX> field;
 
-void triDiSolve(vector rhs, vector &sol, vector sub, vector dia, vector sup);
+void triDiSolve(vector& rhs, vector &sol, vector& sub,
+		vector& dia, vector& sup);
 
 // void null_vector();
 
@@ -23,4 +24,5 @@ double null_0(int k);
 
 double abs(double x) ;
 
+void pp(double) ;
 #endif

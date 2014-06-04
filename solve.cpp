@@ -16,19 +16,30 @@ int main(){
   // all optionnals
 
   // The simulation creates T,w,psi
-  Simulation s (20, 0, 1000);
-
+  Simulation s (1);
+  s.max_niter = 1000;
   s.Ra = 1;
   s.Re = 1;
   s.Pr = 1;
 
   // Iterate at least once over time
-  do {    
-    s.psi->step();
-    s.w->step();
-    s.T->step();
+  while (s.iter()) {    
+    // Compute the difference
+    s.psi->compute();
+    s.w->compute();
+    s.T->compute();
 
-  } while (s.iter()); 
+    // Add it
+    s.psi->add();
+    s.w->add();
+    s.T->add();
+
+    // Boundary conditions
+    s.psi->boundaries();
+    s.w->boundaries();
+    s.T->boundaries();
+
+  }
 
   return 0;
 }
