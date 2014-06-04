@@ -24,7 +24,6 @@ int main(){
 
   // Iterate at least once over time
   do {    
-    // Other way : calculate linear first psi, then w, then T
     s.psi->step();
     s.w->step();
     s.T->step();

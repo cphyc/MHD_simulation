@@ -7,7 +7,6 @@ inline double max(double a, double b){ if (a > b) return a; else return b;}
 
 const int   NZ        =         100; // Z dimension
 const int   a         =           1;
-const int   NX        =        a*NZ; // X dimension
 const int   NMAX      =          50; // Resolution for FFT
 const double DT       =           1; // DTemperature
 
