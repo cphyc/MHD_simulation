@@ -83,7 +83,7 @@ if __name__ == "__main__":
     def save_snap(snap):
         T,w,psi = snap.to_real_grid(100,1)
         niter = snap.niter
-        time = snape.time
+        time = snap.time
             
         plt.imshow(T)
         print("{}/{:0>4}.png".format(sys.argv[2], niter) )
@@ -92,13 +92,13 @@ if __name__ == "__main__":
         plt.savefig("{}/{:0>4}.png".format(sys.argv[2], niter) )
         plt.cla()
 
-    real_snap = ( (snap.to_real_grid(100,3), snap.niter, snap.time) for snap in chunkify(sys.argv[1]) )
+    # real_snap = ( (snap.to_real_grid(100,3), snap.niter, snap.time) for snap in chunkify(sys.argv[1]) )
     # try:
     from multiprocessing import Pool
     nprocess = int(sys.argv[3])
     print ("Multiprocessing with %d cores" % nprocess)
     pool = Pool(processes=nprocess)
-    data = pool.map(save_snap, real_snap)
+    data = pool.map(save_snap, chunkify(sys.argv[1]))
     # except:
     #     print ("No multiprocessing :(")
     #     for snap in real_snap:
