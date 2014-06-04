@@ -10,24 +10,27 @@ class Vector{
 protected:
   Simulation* p;
   double top_boundary, bot_boundary;
-  field nonlinear_contribution();  
+  field nonlinear_contribution();
 public:
   field val;
   field G, G_old;
   int n;
-
-  Vector(double (*f)(int, int), double top = 0, double bot = 0);
+  
+  void step();
   void boundaries(double (*val)(int));
+
+  Vector(double (*f)(int, int), double top, double bot,
+	 Simulation* dady);
 };
 
 // Describes a temperature field
 class Temp : public Vector{
   using Vector::Vector;
 private:
-  double non_linear_term(Vector, int, int);
+  double non_linear_term(int, int);
   void compute_G(int, int);
 public:
-  void linear_step(Vector);
+  void step();
 
 };
 
@@ -35,43 +38,50 @@ public:
 class Vort : public Vector{
   using Vector::Vector;
 private:
-  double non_linear_term(Vector, int, int);
-  void compute_G(Vector, int, int);
+  double non_linear_term(int, int);
+  void compute_G(int, int);
 public:
-  void linear_step(Vector, Vector);
+  void step();
 };
 
 // Describes a stream field
 class Stream : public Vector{
   using Vector::Vector;
-public:
+private:
   field sub, sup, dia;
+public:
+  void step();
 
-  void linear_step(Vector);
-  Stream(double (*init)(int, int));
+  Stream(double (*init)(int, int), double, double, Simulation*);
 };
 
 class Simulation {
 private:
-  Temp *T;
-  Vort *w;
-  Stream *psi;
   std::array<double,NMAX> old_T, old_w, old_psi;
-  void dump(Temp, Vort, Stream );
-  int max_niter;
-  double max_time;
+  void dump();
+  void cfl();
+
 public:
-  double time = 0;
-  int nmax; // Max precision in fourier-space
-  int niter;
-  int save_freq, save_freq_growth;
+  Temp* T;
+  Vort* w;
+  Stream* psi;
+  int nmax, niter, save_freq, save_freq_growth, max_niter;
+  double max_time, dt, t, dt_security;
+  // Constants
+  double Pr, Ra, Re;
   // Iteration method, returns true as long as we want
   // and save the required stuff
-  bool iter(Temp, Vort, Stream);
+  bool iter();
 
   Simulation(int save_freq = 500, int save_freq_growth = 0,
 	     int max_niter = 10000, double max_time = 0,
-	     double init_time = 0, int init_niter = 0);
+             double init_time = 0, int init_niter = 0,
+             double dt_security = 0.9);
+  ~Simulation() {
+    delete T;
+    delete w;
+    delete psi;
+  }
 };
     
 #endif

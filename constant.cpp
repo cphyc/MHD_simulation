@@ -10,14 +10,8 @@ const int   a         =           1;
 const int   NX        =        a*NZ; // X dimension
 const int   NMAX      =          50; // Resolution for FFT
 
-extern double Ra, Pr; // declare Ra and Pr
-
-const double dz       =  1.0/(NZ-1); // Vertical step
-const double oodz_2   = 1.0/(dz*dz);// 1/dz²
-extern double dt;
-const double MAX_TIME =        1000; // Max time
-extern int   MAX_NITER;
+const double DZ       =  1.0/(NZ-1); // Vertical step
+const double OODZ_2   = 1.0/(DZ*DZ);// 1/dz²
 const double PI       = 4.0*atan(1);
 const double c        =        PI/a;
-const double DT       =         1.0;
 #endif
