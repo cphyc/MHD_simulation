@@ -27,7 +27,7 @@ Simulation::Simulation (int save_freq, int save_freq_growth,
 // T0 w0 psi0 T1 w1 psi1 ... Tn wn psin
 void Simulation::dump(){
   // write the header
-  std::cout << "\n\n#Header t:\t" << t << "\n" ;
+  std::cout << "\n\n#Header t:\t" << t << "\t" << dt_security*pow(DZ,2)/(4*max(1,Pr));
 
   // count the columns
   std::cout << std::endl << "#";
@@ -63,7 +63,9 @@ void Simulation::cfl() {
 }
 
 // Iterator of the simulation. Stops when the MAX_TIME or MAX_ITER is reached.
-bool Simulation::iter(){  
+bool Simulation::iter(){
+  // Compute dt
+  cfl();
   // Save every save_freq except if <= 0
   if (save_freq > 0 && niter % save_freq == 0) {
     this->dump();
@@ -104,7 +106,7 @@ bool Simulation::iter(){
   
   // move of one time step and check we can continue
   niter ++;
-  t ++;
+  t += dt;
   if ((max_time > 0 && t > max_time) || (max_niter > 0 && niter > max_niter)) return false;
   return true;
 }

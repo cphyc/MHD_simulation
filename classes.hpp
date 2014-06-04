@@ -76,7 +76,7 @@ public:
   Simulation(int save_freq = 500, int save_freq_growth = 0,
 	     int max_niter = 10000, double max_time = 0,
              double init_time = 0, int init_niter = 0,
-             double dt_security = 0.9);
+             double dt_security = 0.8);
   ~Simulation() {
     delete T;
     delete w;

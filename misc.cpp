@@ -38,8 +38,8 @@ void triDiSolve(vector rhs, vector &sol, vector sub, vector dia, vector sup){
 
 // Initialization functions
 
-double T_init (int n, int k) { return sin(PI*k*dz);}
-double T_0 (int k) { return DT*(1-dz*k); }
+double T_init (int n, int k) { return sin(PI*k*DZ);}
+double T_0 (int k) { return DT*(1-DZ*k); }
 
 double null_init(int n, int k) {return 0;}
 double null_0 (int k) { return 0; }
