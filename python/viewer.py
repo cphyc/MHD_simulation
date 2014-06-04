@@ -16,8 +16,8 @@ def to_object(h, d):
 
     return out
 
-def chunkify():
-    f = open("output.log.short", "r")
+def chunkify(path = "output.log"):
+    f = open(path, "r")
     data = []
     infos = []
     cols = []
@@ -36,7 +36,9 @@ def chunkify():
         else:
             data.append(line)
 
-for snap in chunkify():
-    plt.plot(snap.k, snap.T_0, label="$\T_0$ @ t= %f" % snap.time)
+if __name__ == "__main__":
+    for snap in chunkify():
+        plt.plot(snap.k, snap.T_0, label="$T_0$ @ t= %f" % snap.time)
 
-plt.legend()
+    plt.legend()
+    plt.show()
