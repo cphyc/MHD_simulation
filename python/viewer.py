@@ -19,9 +19,9 @@ class Snapshot(object):
 
 		
 		for k in range(self.nz):
-			T[k] = np.real(np.fft.ifft(T_coeffs[:,k]))
-			w[k] = np.real(np.fft.ifft(w_coeffs[:,k]))
-			psi[k] = np.real(np.fft.ifft(psi_coeffs[:,k]))
+			T[:,k] = np.real(np.fft.ifft(T_coeffs[:,k]))
+			w[:,k] = np.real(np.fft.ifft(w_coeffs[:,k]))
+			psi[:,k] = np.real(np.fft.ifft(psi_coeffs[:,k]))
 		
 
 		return (T, w, psi)
@@ -80,7 +80,7 @@ if __name__ == "__main__":
     #     plt.savefig("{}/{:0^4}.png".format(sys.argv[2], niter) )
     #     plt.cla()
         
-    def save_snap(real_snap):
+    def save_snap(snap):
         try:
             T,w,psi = real_snap.to_real_grid(100,1)
             niter = snap.niter
@@ -98,17 +98,17 @@ if __name__ == "__main__":
         plt.savefig("{}/{:0>4}.png".format(sys.argv[2], niter) )
         plt.cla()
 
-    real_snap = ( (snap.to_real_grid(100,1), snap.niter, snap.time) for snap in chunkify(sys.argv[1]) )
-    try:
-        from multiprocessing import Pool
-        nprocess = int(sys.argv[3])
-        print ("Multiprocessing with %d cores" % nprocess)
-        pool = Pool(processes=nprocess)
-        data = pool.map(save_snap, real_snap)
-    except:
-        print ("No multiprocessing :(")
-        for snap in real_snap:
-            save_snap(snap)
+    real_snap = ( (snap.to_real_grid(100,3), snap.niter, snap.time) for snap in chunkify(sys.argv[1]) )
+    # try:
+    from multiprocessing import Pool
+    nprocess = int(sys.argv[3])
+    print ("Multiprocessing with %d cores" % nprocess)
+    pool = Pool(processes=nprocess)
+    data = pool.map(save_snap, real_snap)
+    # except:
+    #     print ("No multiprocessing :(")
+    #     for snap in real_snap:
+    #         save_snap(snap)
 
     import os
     os.system("mencoder 'mf://%s/*.png' -mf type=png:fps=10" % sys.argv[2]+
