@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+from __future__ import division
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -101,10 +102,12 @@ if __name__ == "__main__":
     real_snap = ( (snap.to_real_grid(100,1), snap.niter, snap.time) for snap in chunkify(sys.argv[1]) )
     try:
         from multiprocessing import Pool
-        pool = Pool(processes=16)
-        datal = pool.map(save_snap, real_snap)
-    except _ as s:
-        print ("No parallel :( %s" % s)
+        nprocess = int(sys.argv[3])
+        print ("Multiprocessing with %d cores" % nprocess)
+        pool = Pool(processes=nprocess)
+        data = pool.map(save_snap, real_snap)
+    except:
+        print ("No multiprocessing :(")
         for snap in chunkify(str(sys.argv[1])):
             save_snap(snap)
 
