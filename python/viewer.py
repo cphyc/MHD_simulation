@@ -81,15 +81,9 @@ if __name__ == "__main__":
     #     plt.cla()
         
     def save_snap(snap):
-        try:
-            T,w,psi = real_snap.to_real_grid(100,1)
-            niter = snap.niter
-            time = snape.time
-
-        except AttributeError:
-            T,w,psi = real_snap[0]
-            niter = real_snap[1]
-            time = real_snap[2]
+        T,w,psi = snap.to_real_grid(100,1)
+        niter = snap.niter
+        time = snape.time
             
         plt.imshow(T)
         print("{}/{:0>4}.png".format(sys.argv[2], niter) )
