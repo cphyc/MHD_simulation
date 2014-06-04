@@ -82,7 +82,6 @@ if __name__ == "__main__":
         
     def save_snap(real_snap):
         try:
-            real_snap.is_snap
             T,w,psi = real_snap.to_real_grid(100,1)
             niter = snap.niter
             time = snape.time
@@ -108,7 +107,7 @@ if __name__ == "__main__":
         data = pool.map(save_snap, real_snap)
     except:
         print ("No multiprocessing :(")
-        for snap in chunkify(str(sys.argv[1])):
+        for snap in real_snap:
             save_snap(snap)
 
     import os
