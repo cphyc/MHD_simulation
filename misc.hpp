@@ -2,6 +2,7 @@
 #define MISC_H
 
 #include <array>
+#include <fftw3.h>
 #include "constant.cpp"
 
 // Type of our vectors (!= std::vector)

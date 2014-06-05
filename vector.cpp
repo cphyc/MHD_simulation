@@ -3,21 +3,29 @@
 #include <array>
 #include <cmath>
 #include <string>
+#include <fftw3.h>
 #include "constant.cpp"
 #include "classes.hpp"
 #include "misc.hpp"
 
 // Takes a function as argument and fill the initial value 
 // thanks to the function
-Vector::Vector(double (*init)(int, int), double top, double bot, Simulation* dady){
-  for (int n = 1; n < NMAX; n++){
+Vector::Vector(double top, double bot, Simulation* dady){
+  for (int n = 0; n < NMAX; n++){
     for (int k = 0; k < NZ ; k++){
-      val[n][k] = init(n, k);
+      val[n][k] = 0;
     }
   }
   this->top_boundary = top;
   this->bot_boundary = bot;
   this->p = dady;
+
+  // initialize the in vector for fft
+  for (int kx = 0; kx < NX; kx ++)
+    in[kx] = 0;
+
+  // actually do a first fft
+  this->FFT();
 }
 
 // set boundary conditions at k = NZ-1 and k = 0
@@ -41,8 +49,30 @@ void Vector::add() {
     }
   }
 }
+void Vector::FFT() {
+  if (!FFT_has_been_done) {
+    fftw_plan plan = fftw_plan_r2r_1d(NX, this->in, this->out, this->fft_flag, FFTW_ESTIMATE);
+    for (int k = 0; k < NZ; k++){
+      // Set the first NMAX elements to our coefficients
+      for (int n = 0; n < NMAX; n++) {
+        this->in[n] = this->val[n][k];
+      }
 
- 
+      // execute the FFT
+      fftw_execute(plan);
+
+      // store the result in real_val
+      for (int kx = 0; kx < NX; kx++) {
+        this->real_val[kx][k] = this->out[kx]/2;
+      }
+    }
+    fftw_destroy_plan(plan);
+    fftw_cleanup();
+
+    FFT_has_been_done = true;
+  }
+}
+
 void Temp::compute_G(int n, int k){
   G_old[n][k] = G[n][k];
 
@@ -53,17 +83,18 @@ void Temp::compute_G(int n, int k){
 
 // Iterates over all modes and compute the new step
 void Temp::compute(){
-  double nlt;
+  double nlt = 0;
   for (int n = 0; n < NMAX; n++) {
     for (int k = 1; k < NZ-1; k++){
       // compute G
       compute_G(n,k);
 	
       // Non linear term
-      nlt = non_linear_term(n, k);
+      //nlt = non_linear_term(n, k);
 
       // New value
-      this->dval[n][k] = nlt + p->dt/2 * (3*G[n][k] - G_old[n][k]);
+      this->dval[n][k] = nlt + p->dt * ( (1+p->dt/(2*p->dt_old))*G[n][k] 
+					 - p->dt/(2*p->dt_old)*G_old[n][k]);
     }
   }
   // set the boundary conditions and apply T_0 for 0th mode
@@ -90,7 +121,7 @@ double Temp::non_linear_term(int n, int k){
       n3 = n - n2;
       if (n3 > 0 && n3 < NMAX) {
 	nlt += -n*c * psi->val[n][k]*(this->val[0][k+1] - this->val[0][k-1])
-	  - c/2 * (-n2*(psi->val[n3][k+1] - psi->val[n3][k-1])/(2*DZ) * this->val[n2][k]
+	  - c/2 * (-n2*(psi->val[n3][k+1] - psi->val[n3][k])/(2*DZ) * this->val[n2][k-1]
 			+n3*psi->val[n3][k] * (this->val[n2][k+1] - this->val[n2][k-1])/(2*DZ));
       }
       n3 = n2 -n;
@@ -107,7 +138,7 @@ double Temp::non_linear_term(int n, int k){
     return nlt;
   }
 }
-
+    
 void Vort::compute_G(int n, int k){
   G_old[n][k] = G[n][k];
   G[n][k] = p->Ra*p->Pr*(n * c) * this->p->T->val[n][k] 
@@ -124,10 +155,13 @@ void Vort::compute(){
       compute_G(n, k);
 	
       // Non linear term
-      nlt = non_linear_term(n, k);
+      //nlt = non_linear_term(n, k);
 
       // New value
-      this->dval[n][k] = nlt + p->dt/2 * (3*G[n][k] - G_old[n][k]);
+      double new_val = nlt + p->dt * ( (1+p->dt/(2*p->dt_old))*G[n][k] 
+					 - p->dt/(2*p->dt_old)*G_old[n][k]);
+	
+      this->dval[n][k] = new_val;
     }
   }
 }
@@ -161,13 +195,14 @@ double Vort::non_linear_term(int n, int k){
     return nlt;
   }
 }
-  
 
 // This function uses the default constructor of Vector
 // and calculate some matrix elements
-Stream::Stream (double (*init)(int, int), double top, double bot,
+Stream::Stream (double top, double bot,
 		Simulation* dady) :
-  Vector (init, top, bot, dady)  {
+  Vector (top, bot, dady)  {
+
+  this->fft_flag = FFTW_RODFT00;
 
   // Calculate dia[n], sup[n], sub[n]
   for (int n = 1; n < NMAX; n++){

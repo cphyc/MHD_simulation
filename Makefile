@@ -1,6 +1,6 @@
-CC=g++ -std=c++11 -g
-CFLAGS=-c -Wall -ffast-math -fomit-frame-pointer -O2 -g
-LFLAGS=-O2 -g
+CC=g++ -std=c++11 -lm -lfftw3 -O2
+CFLAGS=-c -Wall
+LFLAGS=
 SOURCES=misc.cpp constant.cpp vector.cpp simulation.cpp solve.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
 CLEAN= $(OBJECTS)
